@@ -1,0 +1,43 @@
+[root@ip-10-1-10-24 ec2-user]# mysql -h udacity-primary-cfn-stack-dbinstance-ix5ket8f8zup.cmtckbgapu1m.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
+Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 572
+Server version: 8.0.33 Source distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MySQL [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
+| udacity            |
++--------------------+
+5 rows in set (0.018 sec)
+
+MySQL [(none)]> USE udacity;
+Database changed
+MySQL [udacity]> CREATE TABLE example (id INT PRIMARY KEY,name VARCHAR(255),age INT);
+Query OK, 0 rows affected (0.195 sec)
+
+MySQL [udacity]> INSERT INTO example (id, name, age) VALUES (1, 'John', 30);
+Query OK, 1 row affected (0.017 sec)
+
+MySQL [udacity]> INSERT INTO example (id, name, age) VALUES (2, 'Alice', 25);
+Query OK, 1 row affected (0.016 sec)
+
+MySQL [udacity]> SELECT * FROM example;
++----+-------+------+
+| id | name  | age  |
++----+-------+------+
+|  1 | John  |   30 |
+|  2 | Alice |   25 |
++----+-------+------+
+2 rows in set (0.003 sec)
+
+MySQL [udacity]>

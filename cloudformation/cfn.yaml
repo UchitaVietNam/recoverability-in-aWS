@@ -30,6 +30,10 @@ Parameters:
     Type: String
     Default: 10.1.21.0/24
 
+  RDSMasterPassword:
+    Description: Master user password of RDS
+    Type: String
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -203,6 +207,62 @@ Resources:
         - Key: Name
           Value: UDARR-Application
 
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: RDS Subnet Group
+      SubnetIds:
+        - !GetAtt PrivateSubnet1.SubnetId
+        - !GetAtt PrivateSubnet2.SubnetId
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: mysql
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: 20
+      MasterUsername: admin
+      MasterUserPassword: !Ref RDSMasterPassword
+      DBName: udacity
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+      MultiAZ: true
+      StorageType: gp2
+      BackupRetentionPeriod: 7
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: udacity
+      SecurityGroupIds:
+        - !Ref ApplicationSecurityGroup
+        - !Ref DatabaseSecurityGroup
+      SubnetId: !Ref PublicSubnet1
+      ImageId: ami-067d1e60475437da2
+      Tags:
+        - Key: Name
+          Value: EC2InstanceForDBAccess
+
+  StaticWebsiteBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref StaticWebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Action: 's3:GetObject'
+            Effect: 'Allow'
+            Resource: !Sub 'arn:aws:s3:::${StaticWebsiteBucket}/*'
+            Principal: '*'
+
 Outputs:
   VPC:
     Description: VPC ID
@@ -223,3 +283,7 @@ Outputs:
   ApplicationSecurityGroup:
     Description: ID of the EC2 instance security group
     Value: !Ref ApplicationSecurityGroup
+
+  WebsiteURL:
+    Description: URL for the static website
+    Value: !GetAtt StaticWebsiteBucket.WebsiteURL
